@@ -5,6 +5,7 @@ import type { HTMLAttributes, ReactNode } from "react"
 import {
   getColumnHeaderLabel,
   getDataGridAlignContentClass,
+  getDataGridAlignMarginClass,
   useDataGrid,
 } from "@/registry-reui/bases/base/reui/data-grid/data-grid"
 import type { DataGridFeatures } from "@/registry-reui/bases/base/reui/data-grid/data-grid"
@@ -55,7 +56,13 @@ function DataGridColumnHeaderInner<TData extends object, TValue>({
   // `meta.align` positions the trigger inside the header cell. Consumer
   // `[&>div]` child selectors in headerClassName keep working and win over
   // these plain utilities through higher specificity.
-  const contentAlignClass = getDataGridAlignContentClass(column.columnDef.meta?.align)
+  const align = column.columnDef.meta?.align
+  const contentAlignClass = getDataGridAlignContentClass(align)
+  const contentMarginClass = getDataGridAlignMarginClass(align)
+  // End alignment lets the trigger's trailing padding extend into the
+  // cell padding zone, where the resize handle lives; keep the controls
+  // above it so they stay clickable.
+  const alignEndControlsClass = align === "end" ? "relative z-20" : undefined
 
   // TanStack's columnOrder defaults to [] until a consumer seeds it; fall
   // back to the definition order so Move Left/Right work out of the box.
@@ -95,7 +102,8 @@ function DataGridColumnHeaderInner<TData extends object, TValue>({
 
   const headerButtonClassName = cn(
     "text-secondary-foreground/80 hover:bg-secondary data-[state=open]:bg-secondary hover:text-foreground data-[state=open]:text-foreground px-2 font-normal h-6 style-vega:rounded-md style-nova:rounded-lg style-maia:rounded-full style-lyra:rounded-none style-mira:rounded-md style-luma:rounded-full style-sera:rounded-none style-rhea:rounded-full",
-    className
+    className,
+    alignEndControlsClass
   )
 
   const sortIcon =
@@ -403,7 +411,8 @@ function DataGridColumnHeaderInner<TData extends object, TValue>({
     return (
       <div
         className={cn(
-          "-ms-2 flex h-full items-center gap-1.5",
+          "flex h-full items-center gap-1.5",
+          contentMarginClass,
           contentAlignClass ?? "justify-between"
         )}
       >
@@ -429,7 +438,10 @@ function DataGridColumnHeaderInner<TData extends object, TValue>({
           <Button
             size="icon-sm"
             variant="ghost"
-            className="style-vega:rounded-md style-nova:rounded-lg style-maia:rounded-full style-lyra:rounded-none style-mira:rounded-md style-luma:rounded-full style-sera:rounded-none style-rhea:rounded-full -me-1 size-7"
+            className={cn(
+              "style-vega:rounded-md style-nova:rounded-lg style-maia:rounded-full style-lyra:rounded-none style-mira:rounded-md style-luma:rounded-full style-sera:rounded-none style-rhea:rounded-full -me-1 size-7",
+              alignEndControlsClass
+            )}
             onClick={() => column.pin(false)}
             aria-label={`Unpin ${resolvedTitle} column`}
             title={`Unpin ${resolvedTitle} column`}
@@ -451,7 +463,7 @@ function DataGridColumnHeaderInner<TData extends object, TValue>({
 
   if (canSort || (props.tableLayout?.columnsResizable && canResize)) {
     return (
-      <div className={cn("-ms-2 flex h-full items-center", contentAlignClass)}>
+      <div className={cn("flex h-full items-center", contentMarginClass, contentAlignClass)}>
         <Button
           variant="ghost"
           className={headerButtonClassName}

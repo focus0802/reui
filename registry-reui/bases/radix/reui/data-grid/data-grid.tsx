@@ -82,6 +82,15 @@ const DATA_GRID_ALIGN_CONTENT_CLASSES: Record<DataGridColumnAlign, string | unde
   end: "w-full justify-end",
 }
 
+const DATA_GRID_ALIGN_MARGIN_CLASSES: Record<DataGridColumnAlign, string | undefined> = {
+  // The start compensation cancels the trigger's own inline-start padding so
+  // the label aligns with the body cell content. Center needs no margin, and
+  // end mirrors the compensation onto the opposite side.
+  start: "-ms-2",
+  center: undefined,
+  end: "-me-2",
+}
+
 /** True when the class string already carries a text-align utility. */
 export function hasDataGridTextAlignUtility(className?: string) {
   if (!className) return false
@@ -97,6 +106,11 @@ export function getDataGridAlignTextClass(align?: DataGridColumnAlign) {
 /** The header content wrapper classes for a `meta.align` value, or undefined. */
 export function getDataGridAlignContentClass(align?: DataGridColumnAlign) {
   return align ? DATA_GRID_ALIGN_CONTENT_CLASSES[align] : undefined
+}
+
+/** The header content wrapper margin compensation for a `meta.align` value. */
+export function getDataGridAlignMarginClass(align?: DataGridColumnAlign) {
+  return align ? DATA_GRID_ALIGN_MARGIN_CLASSES[align] : DATA_GRID_ALIGN_MARGIN_CLASSES.start
 }
 
 /**
