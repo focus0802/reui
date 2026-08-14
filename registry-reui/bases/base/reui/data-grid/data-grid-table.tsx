@@ -17,7 +17,11 @@ import type {
   Ref,
   RefObject,
 } from "react"
-import { useDataGrid } from "@/registry-reui/bases/base/reui/data-grid/data-grid"
+import {
+  getDataGridAlignTextClass,
+  hasDataGridTextAlignUtility,
+  useDataGrid,
+} from "@/registry-reui/bases/base/reui/data-grid/data-grid"
 import type {
   DataGridFeatures,
   DataGridTableInstance,
@@ -812,6 +816,15 @@ function DataGridTableHeadRowCell<TData extends object>({
   const { props } = useDataGrid()
 
   const { column } = header
+  // `meta.align` drives the cell's text alignment unless the consumer's own
+  // headerClassName already carries a text utility; the header content
+  // wrapper position is handled by DataGridColumnHeader via
+  // getDataGridAlignContentClass.
+  const alignTextClass = hasDataGridTextAlignUtility(
+    header.column.columnDef.meta?.headerClassName
+  )
+    ? undefined
+    : (getDataGridAlignTextClass(header.column.columnDef.meta?.align) ?? "text-start")
   const isPinned = column.getIsPinned()
   const isFirstStartPinned =
     isPinned === "start" && column.getIsFirstColumn("start")
@@ -861,7 +874,8 @@ function DataGridTableHeadRowCell<TData extends object>({
         isLastStartPinned ? "start" : isFirstEndPinned ? "end" : undefined
       }
       className={cn(
-        "text-foreground relative h-10 text-left align-middle font-medium rtl:text-right [&:has([role=checkbox])]:pe-0",
+        "text-foreground relative h-10 align-middle font-medium [&:has([role=checkbox])]:pe-0",
+        alignTextClass,
         headerCellSpacing,
         props.tableLayout?.headerBackground && "bg-muted",
         props.tableLayout?.cellBorder && "border-e",
@@ -1235,6 +1249,11 @@ function DataGridTableBodyRowSkeletonCell<TData extends object>({
   const bodyCellSpacing = bodyCellSpacingVariants({
     size: props.tableLayout?.dense ? "dense" : "default",
   })
+  const alignTextClass = hasDataGridTextAlignUtility(
+    column.columnDef.meta?.cellClassName
+  )
+    ? undefined
+    : getDataGridAlignTextClass(column.columnDef.meta?.align)
 
   return (
     <td
@@ -1245,6 +1264,7 @@ function DataGridTableBodyRowSkeletonCell<TData extends object>({
       }
       className={cn(
         "align-middle",
+        alignTextClass,
         bodyCellSpacing,
         props.tableLayout?.cellBorder && "border-e",
         props.tableLayout?.columnsResizable &&
@@ -1388,6 +1408,11 @@ function DataGridTableBodyRowCell<TData extends object>({
   const { props } = useDataGrid()
 
   const { column, row } = cell
+  const alignTextClass = hasDataGridTextAlignUtility(
+    cell.column.columnDef.meta?.cellClassName
+  )
+    ? undefined
+    : getDataGridAlignTextClass(cell.column.columnDef.meta?.align)
   const isPinned = column.getIsPinned()
   const isLastStartPinned =
     isPinned === "start" && column.getIsLastColumn("start")
@@ -1414,6 +1439,7 @@ function DataGridTableBodyRowCell<TData extends object>({
       }
       className={cn(
         "align-middle",
+        alignTextClass,
         bodyCellSpacing,
         props.tableLayout?.cellBorder && "border-e",
         props.tableLayout?.columnsResizable &&

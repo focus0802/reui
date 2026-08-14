@@ -40,6 +40,11 @@ import type {
 import { cn } from "@/registry/bases/radix/lib/utils"
 
 /**
+ * Horizontal alignment a column opts into through `meta.align`.
+ */
+export type DataGridColumnAlign = "start" | "center" | "end"
+
+/**
  * Per-column extras the grid reads off `columnDef.meta`.
  *
  * TanStack v9 resolves this through the `columnMeta` slot on the feature
@@ -54,6 +59,44 @@ export interface DataGridColumnMeta<TData> {
   skeleton?: ReactNode
   expandedContent?: (row: TData) => ReactNode
   autoSize?: boolean
+  /**
+   * Semantic alignment for the body cells and the header content. The grid
+   * maps it to logical `text-*` classes on the cells and to the layout of
+   * the internal header content wrapper, so consumers no longer need
+   * `[&>div]` child selectors to position the header trigger. Explicit
+   * `text-*` utilities in `headerClassName` / `cellClassName` win over
+   * `align`.
+   */
+  align?: DataGridColumnAlign
+}
+
+const DATA_GRID_ALIGN_TEXT_CLASSES: Record<DataGridColumnAlign, string> = {
+  start: "text-start",
+  center: "text-center",
+  end: "text-end",
+}
+
+const DATA_GRID_ALIGN_CONTENT_CLASSES: Record<DataGridColumnAlign, string | undefined> = {
+  start: undefined,
+  center: "w-full justify-center",
+  end: "w-full justify-end",
+}
+
+/** True when the class string already carries a text-align utility. */
+export function hasDataGridTextAlignUtility(className?: string) {
+  if (!className) return false
+
+  return /\btext-(?:left|right|center|justify|start|end)\b/.test(className)
+}
+
+/** The logical text class for a `meta.align` value, or undefined. */
+export function getDataGridAlignTextClass(align?: DataGridColumnAlign) {
+  return align ? DATA_GRID_ALIGN_TEXT_CLASSES[align] : undefined
+}
+
+/** The header content wrapper classes for a `meta.align` value, or undefined. */
+export function getDataGridAlignContentClass(align?: DataGridColumnAlign) {
+  return align ? DATA_GRID_ALIGN_CONTENT_CLASSES[align] : undefined
 }
 
 /**

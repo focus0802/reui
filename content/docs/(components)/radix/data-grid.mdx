@@ -57,7 +57,8 @@ Two entries in the bundle are neither features nor row models:
   passed as a function. `"auto"` keeps working, but when it infers an unregistered name it warns in development
   and falls back.
 - `columnMeta`, which types `columnDef.meta` as `DataGridColumnMeta` (`headerTitle`, `headerClassName`,
-  `cellClassName`, `skeleton`, `expandedContent`, `autoSize`). A features-level `columnMeta` slot wins over the
+  `cellClassName`, `skeleton`, `expandedContent`, `autoSize`, `align`). A features-level `columnMeta` slot wins
+  over the
   global `ColumnMeta` interface, so the v8 `declare module` augmentation is ignored on any table built with
   `dataGridFeatures`. Add your own fields to `DataGridColumnMeta` in the installed `data-grid.tsx` instead.
 
@@ -97,6 +98,23 @@ once. The sub-components that take a `column`, `row` or `table` prop (`DataGridC
 `DataGridColumnFilter`, `DataGridColumnVisibility`, `DataGridTableRowSelect`, `DataGridTableRowPin`,
 `DataGridTableRowExpand`) are declared against `DataGridFeatures`, and `TFeatures` is invariant in v9, so any
 bundle that is wider or leaner than `dataGridFeatures` needs a cast at those boundaries.
+
+### Column alignment
+
+Align a column by setting `meta.align` to `"start"`, `"center"` or `"end"` instead of hand-writing `text-*`
+classes:
+
+```tsx
+{
+  accessorKey: "amount",
+  meta: { align: "end" },
+}
+```
+
+The grid maps `align` to logical `text-start` / `text-center` / `text-end` on the header and body cells and
+positions the header trigger inside its own content wrapper, so RTL falls out naturally and there is no need for
+`[&>div]` child selectors. Explicit `text-*` utilities in `headerClassName` / `cellClassName` win over `align`,
+as do `[&>div]` layout utilities in `headerClassName`.
 
 <Callout title="Upgrading from v8" variant="warning">
 

@@ -4,6 +4,7 @@ import { memo, useMemo } from "react"
 import type { HTMLAttributes, ReactNode } from "react"
 import {
   getColumnHeaderLabel,
+  getDataGridAlignContentClass,
   useDataGrid,
 } from "@/registry-reui/bases/base/reui/data-grid/data-grid"
 import type { DataGridFeatures } from "@/registry-reui/bases/base/reui/data-grid/data-grid"
@@ -51,6 +52,10 @@ function DataGridColumnHeaderInner<TData extends object, TValue>({
 }: DataGridColumnHeaderProps<TData, TValue>) {
   const { isLoading, table, props } = useDataGrid()
   const resolvedTitle = title ?? getColumnHeaderLabel(column)
+  // `meta.align` positions the trigger inside the header cell. Consumer
+  // `[&>div]` child selectors in headerClassName keep working and win over
+  // these plain utilities through higher specificity.
+  const contentAlignClass = getDataGridAlignContentClass(column.columnDef.meta?.align)
 
   // TanStack's columnOrder defaults to [] until a consumer seeds it; fall
   // back to the definition order so Move Left/Right work out of the box.
@@ -396,7 +401,12 @@ function DataGridColumnHeaderInner<TData extends object, TValue>({
 
   if (hasControls) {
     return (
-      <div className="-ms-2 flex h-full items-center justify-between gap-1.5">
+      <div
+        className={cn(
+          "-ms-2 flex h-full items-center gap-1.5",
+          contentAlignClass ?? "justify-between"
+        )}
+      >
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
@@ -441,7 +451,7 @@ function DataGridColumnHeaderInner<TData extends object, TValue>({
 
   if (canSort || (props.tableLayout?.columnsResizable && canResize)) {
     return (
-      <div className="-ms-2 flex h-full items-center">
+      <div className={cn("-ms-2 flex h-full items-center", contentAlignClass)}>
         <Button
           variant="ghost"
           className={headerButtonClassName}
@@ -457,7 +467,7 @@ function DataGridColumnHeaderInner<TData extends object, TValue>({
   }
 
   return (
-    <div className={headerLabelClassName}>
+    <div className={cn(headerLabelClassName, contentAlignClass)}>
       {icon && icon}
       {resolvedTitle}
     </div>

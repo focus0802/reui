@@ -233,8 +233,7 @@ export default function Pattern() {
         cell: (info) => <>${(info.getValue() as number).toFixed(2)}</>,
         size: 100,
         meta: {
-          headerClassName: "text-right rtl:text-left",
-          cellClassName: "text-right rtl:text-left",
+          align: "end",
         },
       },
     ],
