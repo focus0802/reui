@@ -88,7 +88,7 @@ const DATA_GRID_ALIGN_MARGIN_CLASSES: Record<DataGridColumnAlign, string | undef
   // end mirrors the compensation onto the opposite side.
   start: "-ms-2",
   center: undefined,
-  end: "-me-2",
+  end: undefined,
 }
 
 /** True when the class string already carries a text-align utility. */
