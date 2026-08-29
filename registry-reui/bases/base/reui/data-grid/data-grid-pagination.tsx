@@ -32,6 +32,54 @@ interface DataGridPaginationProps {
   ellipsisText?: string
 }
 
+type PaginationItem =
+  | { type: "page"; index: number }
+  | { type: "ellipsis"; direction: "previous" | "next" }
+
+function getPaginationItems(
+  pageIndex: number,
+  pageCount: number
+): PaginationItem[] {
+  if (pageCount <= 7) {
+    return Array.from({ length: pageCount }, (_, index) => ({
+      type: "page",
+      index,
+    }))
+  }
+
+  if (pageIndex <= 3) {
+    return [
+      ...Array.from({ length: 5 }, (_, index) => ({
+        type: "page" as const,
+        index,
+      })),
+      { type: "ellipsis", direction: "next" },
+      { type: "page", index: pageCount - 1 },
+    ]
+  }
+
+  if (pageIndex >= pageCount - 4) {
+    return [
+      { type: "page", index: 0 },
+      { type: "ellipsis", direction: "previous" },
+      ...Array.from({ length: 5 }, (_, offset) => ({
+        type: "page" as const,
+        index: pageCount - 5 + offset,
+      })),
+    ]
+  }
+
+  return [
+    { type: "page", index: 0 },
+    { type: "ellipsis", direction: "previous" },
+    { type: "page", index: pageIndex - 1 },
+    { type: "page", index: pageIndex },
+    { type: "page", index: pageIndex + 1 },
+    { type: "ellipsis", direction: "next" },
+    { type: "page", index: pageCount - 1 },
+  ]
+}
+
 function DataGridPagination(props: DataGridPaginationProps): JSX.Element {
   const { table, recordCount, isLoading } = useDataGrid()
 
@@ -65,75 +113,7 @@ function DataGridPagination(props: DataGridPaginationProps): JSX.Element {
         .replaceAll("{count}", recordCount.toString())
     : `${from} - ${to} of ${recordCount}`
 
-  // Pagination limit logic
-  const paginationMoreLimit = mergedProps.moreLimit || 5
-
-  // Determine the start and end of the pagination group
-  const currentGroupStart =
-    Math.floor(pageIndex / paginationMoreLimit) * paginationMoreLimit
-  const currentGroupEnd = Math.min(
-    currentGroupStart + paginationMoreLimit,
-    pageCount
-  )
-
-  // Render page buttons based on the current group
-  const renderPageButtons = () => {
-    const buttons = []
-    for (let i = currentGroupStart; i < currentGroupEnd; i++) {
-      buttons.push(
-        <Button
-          key={i}
-          size="icon-sm"
-          variant="ghost"
-          className={cn(btnBaseClasses, "text-muted-foreground", {
-            "bg-accent text-accent-foreground": pageIndex === i,
-          })}
-          onClick={() => {
-            if (pageIndex !== i) {
-              table.setPageIndex(i)
-            }
-          }}
-        >
-          {i + 1}
-        </Button>
-      )
-    }
-    return buttons
-  }
-
-  // Render a "previous" ellipsis button if there are previous pages to show
-  const renderEllipsisPrevButton = () => {
-    if (currentGroupStart > 0) {
-      return (
-        <Button
-          size="icon-sm"
-          className={btnBaseClasses}
-          variant="ghost"
-          onClick={() => table.setPageIndex(currentGroupStart - 1)}
-        >
-          {mergedProps.ellipsisText}
-        </Button>
-      )
-    }
-    return null
-  }
-
-  // Render a "next" ellipsis button if there are more pages to show after the current group
-  const renderEllipsisNextButton = () => {
-    if (currentGroupEnd < pageCount) {
-      return (
-        <Button
-          className={btnBaseClasses}
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => table.setPageIndex(currentGroupEnd)}
-        >
-          {mergedProps.ellipsisText}
-        </Button>
-      )
-    }
-    return null
-  }
+  const paginationItems = getPaginationItems(pageIndex, pageCount)
 
   return (
     <div
@@ -185,50 +165,83 @@ function DataGridPagination(props: DataGridPaginationProps): JSX.Element {
               {paginationInfo}
             </div>
             {pageCount > 1 && (
-              <div className="order-1 flex items-center space-x-1">
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  className={btnArrowClasses}
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">
-                    {mergedProps.previousPageLabel}
-                  </span>
-                  <IconPlaceholder
-                    lucide="ChevronLeftIcon"
-                    tabler="IconChevronLeft"
-                    hugeicons="ArrowLeft01Icon"
-                    phosphor="CaretLeftIcon"
-                    remixicon="RiArrowLeftSLine"
-                    className="size-4"
-                  />
-                </Button>
+              <div className="order-1 max-w-full overflow-x-auto">
+                <div className="flex min-w-max items-center space-x-1">
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    className={btnArrowClasses}
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                  >
+                    <span className="sr-only">
+                      {mergedProps.previousPageLabel}
+                    </span>
+                    <IconPlaceholder
+                      lucide="ChevronLeftIcon"
+                      tabler="IconChevronLeft"
+                      hugeicons="ArrowLeft01Icon"
+                      phosphor="CaretLeftIcon"
+                      remixicon="RiArrowLeftSLine"
+                      className="size-4"
+                    />
+                  </Button>
 
-                {renderEllipsisPrevButton()}
+                  {paginationItems.map((item) =>
+                    item.type === "page" ? (
+                      <Button
+                        key={`page-${item.index}`}
+                        size="icon-sm"
+                        variant="ghost"
+                        className={cn(btnBaseClasses, "text-muted-foreground", {
+                          "bg-accent text-accent-foreground":
+                            pageIndex === item.index,
+                        })}
+                        onClick={() => {
+                          if (pageIndex !== item.index) {
+                            table.setPageIndex(item.index)
+                          }
+                        }}
+                      >
+                        {item.index + 1}
+                      </Button>
+                    ) : (
+                      <Button
+                        key={`ellipsis-${item.direction}`}
+                        size="icon-sm"
+                        className={btnBaseClasses}
+                        variant="ghost"
+                        onClick={() => {
+                          const target =
+                            item.direction === "previous"
+                              ? Math.max(0, pageIndex - 3)
+                              : Math.min(pageCount - 1, pageIndex + 3)
+                          table.setPageIndex(target)
+                        }}
+                      >
+                        {mergedProps.ellipsisText}
+                      </Button>
+                    )
+                  )}
 
-                {renderPageButtons()}
-
-                {renderEllipsisNextButton()}
-
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  className={btnArrowClasses}
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <span className="sr-only">{mergedProps.nextPageLabel}</span>
-                  <IconPlaceholder
-                    lucide="ChevronRightIcon"
-                    tabler="IconChevronRight"
-                    hugeicons="ArrowRight01Icon"
-                    phosphor="CaretRightIcon"
-                    remixicon="RiArrowRightSLine"
-                    className="size-4"
-                  />
-                </Button>
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    className={btnArrowClasses}
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                  >
+                    <span className="sr-only">{mergedProps.nextPageLabel}</span>
+                    <IconPlaceholder
+                      lucide="ChevronRightIcon"
+                      tabler="IconChevronRight"
+                      hugeicons="ArrowRight01Icon"
+                      phosphor="CaretRightIcon"
+                      remixicon="RiArrowRightSLine"
+                      className="size-4"
+                    />
+                  </Button>
+                </div>
               </div>
             )}
           </>

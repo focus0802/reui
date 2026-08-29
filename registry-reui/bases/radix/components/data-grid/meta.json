@@ -238,5 +238,13 @@
     "order": 30,
     "gridSize": 1,
     "previewHeight": "608"
+  },
+  {
+    "name": "c-data-grid-31",
+    "title": "Data grid with adaptive pagination",
+    "description": "Data grid with adaptive pagination",
+    "order": 31,
+    "gridSize": 1,
+    "previewHeight": "420"
   }
 ]

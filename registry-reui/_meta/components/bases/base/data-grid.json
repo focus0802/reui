@@ -1024,6 +1024,35 @@
         "gridSize": 1,
         "previewHeight": "608"
       }
+    },
+    {
+      "name": "c-data-grid-31",
+      "type": "registry:block",
+      "title": "Data grid with adaptive pagination",
+      "categories": [
+        "data-grid"
+      ],
+      "description": "Data grid with adaptive pagination",
+      "registryDependencies": [
+        "data-grid",
+        "data-grid-pagination",
+        "data-grid-table"
+      ],
+      "dependencies": [
+        "@tanstack/react-table"
+      ],
+      "files": [
+        {
+          "path": "components/data-grid/c-data-grid-31.tsx",
+          "type": "registry:block",
+          "target": "components/examples/c-data-grid-31.tsx"
+        }
+      ],
+      "meta": {
+        "order": 31,
+        "gridSize": 1,
+        "previewHeight": "420"
+      }
     }
   ]
 }
